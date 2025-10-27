@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tokyo Stationery Guide</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 1. CORE THEME & LAYOUT --- */
+        :root {
+            --background-color: #F8F9FA;
+            --sidebar-bg: #FFFFFF;
+            --text-color: #212529;
+            --text-muted: #6C757D;
+            --border-color: #DEE2E6;
+            --hover-bg: #F1F3F5;
+            --tag-bg: #E9ECEF;
+            --tag-text: #495057;
+            --flagship-red: #C0392B;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Lato', sans-serif;
+            background-color: var(--background-color);
+            overflow: hidden;
+            color: var(--text-color);
+        }
+
+        body {
+            display: flex;
+        }
+
+        #map {
+            flex-grow: 1;
+            height: 100%;
+        }
+
+        /* --- 2. SIDEBAR STYLING --- */
+        #sidebar {
+            width: 380px;
+            max-width: 90%;
+            height: 100%;
+            background: var(--sidebar-bg);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            border-right: 1px solid var(--border-color);
+        }
+
+        #sidebar header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        #sidebar header h1 {
+            font-family: 'Merriweather', serif;
+            margin: 0 0 10px 0;
+            font-size: 1.8em;
+            font-weight: 700;
+        }
+
+        #sidebar header p {
+            margin: 0 0 15px 0;
+            color: var(--text-muted);
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .creator-byline {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+        .creator-byline a {
+            color: var(--text-color);
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .creator-byline a:hover {
+            text-decoration: underline;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 18px;
+        }
+        .social-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .social-links a:hover {
+            color: var(--text-color);
+        }
+        .social-links svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .last-updated {
+            font-size: 0.8em;
+            font-style: italic;
+            color: var(--text-muted);
+            margin-top: 20px;
+            margin-bottom: 0;
+        }
+
+        /* --- 3. FILTER & LOCATION LIST --- */
+        .filter-container {
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: #fdfdfd;
+        }
+        .filter-container h2 {
+            margin: 0 0 12px 0;
+            font-size: 0.9em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+        }
+        .filter-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .filter-tag {
+            /* REVISED: Resetting default button styles for accessibility */
+            border: 1px solid #ced4da;
+            background-color: var(--tag-bg);
+            font-family: 'Lato', sans-serif;
+            
+            padding: 6px 14px;
+            font-size: 0.85em;
+            border-radius: 15px;
+            color: var(--tag-text);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+        }
+        .filter-tag:hover {
+            background-color: #d8dde2;
+        }
+        .filter-tag.active {
+            background-color: var(--text-color);
+            color: #fff;
+            border-color: var(--text-color);
+        }
+
+        #location-list {
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .location-item {
+            display: block;
+            padding: 20px 25px;
+            text-decoration: none;
+            color: var(--text-color);
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s ease;
+            cursor: pointer;
+        }
+        .location-item:hover {
+            background-color: var(--hover-bg);
+        }
+        .location-item.active {
+            background-color: var(--hover-bg);
+            border-left: 4px solid var(--text-color);
+            padding-left: 21px;
+        }
+        .location-item.active.flagship {
+            border-left-color: var(--flagship-red);
+        }
+
+        .location-item h3 {
+            font-family: 'Merriweather', serif;
+            font-size: 1.2em;
+            margin: 0 0 5px 0;
+        }
+
+        .location-item > span {
+            font-size: 0.9em;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .location-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        .tag, .tax-free-badge, .flagship-badge {
+            padding: 4px 10px;
+            font-size: 0.75em;
+            border-radius: 5px;
+            font-weight: 700;
+        }
+        .tag {
+            background-color: var(--tag-bg);
+            color: var(--tag-text);
+        }
+        .tax-free-badge {
+            border: 1px solid #198754;
+            background-color: #e8f3ee;
+            color: #146c43;
+        }
+        .flagship-badge {
+            background-color: var(--flagship-red);
+            color: #fff;
+        }
+
+        .hidden-tags {
+            display: none; /* Initially hide the container for extra tags */
+        }
+        .more-tags-btn {
+            /* REVISED: Resetting default button styles for accessibility */
+            background: none;
+            border: none;
+            font-family: 'Lato', sans-serif;
+            text-align: left;
+            
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px 0;
+            margin-left: 2px;
+            font-size: 0.75em;
+            font-weight: 700;
+            text-decoration: underline;
+            text-decoration-style: dotted;
+        }
+        .more-tags-btn:hover {
+            color: var(--text-color);
+        }
+
+        /* --- 4. POP-UP (INFOWINDOW) STYLING --- */
+        .popup-container {
+            font-family: 'Lato', sans-serif;
+            width: 300px;
+            padding: 0;
+            color: var(--text-color);
+        }
+        .popup-image {
+            width: 100%;
+            height: 120px;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+        }
+        .popup-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .popup-content {
+            padding: 20px;
+        }
+        .popup-title {
+            font-family: 'Merriweather', serif;
+            font-weight: 700;
+            font-size: 1.4em;
+            margin: 0 0 10px 0;
+        }
+        .popup-description {
+            font-size: 0.95em;
+            margin-bottom: 15px;
+            line-height: 1.6;
+            color: var(--text-muted);
+        }
+        .popup-tip {
+            background-color: var(--hover-bg);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 0.9em;
+            line-height: 1.5;
+            border-left: 3px solid var(--text-muted);
+        }
+        .popup-tip strong {
+            color: var(--text-color);
+            display: block;
+            margin-bottom: 5px;
+        }
+        .directions-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .direction-btn {
+            display: inline-block;
+            padding: 10px 12px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            background-color: #343A40;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+            flex-grow: 1;
+        }
+        .direction-btn:hover {
+            opacity: 0.85;
+        }
+        
+        /* --- 5. RESPONSIVE DESIGN --- */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            #sidebar {
+                width: 100%;
+                height: 45%;
+                max-height: 400px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            #map { width: 100%; height: 55%; }
+        }
+    </style>
+ </head>
+ <body>
+
+    <main id="sidebar">
+        <header>
+            <h1>Tokyo Stationery Guide</h1>
+            <p>A curated guide to the most popular stationery shops in Tokyo. More locations will be added over time.</p>
+
+            <p class="last-updated">Last Updated: October 2025</p>
+
+            <p class="creator-byline">Curated by <a href="https://www.youtube.com/@TheJournal.Journey" target="_blank">Phira</a></p>
+            <div class="social-links">
+                <a href="https://www.instagram.com/phira_journaljourney/?hl=en" target="_blank" title="Instagram">
+                    <svg viewBox="0 0 24 24" role="img" aria-labelledby="instagramTitle">
+                        <!-- REVISED: Added <title> for accessibility -->
+                        <title id="instagramTitle">Instagram</title>
+                        <path d="M7.8,2H16.2C19.4,2 22,4.6 22,7.8V16.2A5.8,5.8 0 0,1 16.2,22H7.8C4.6,22 2,19.4 2,16.2V7.8A5.8,5.8 0 0,1 7.8,2M7.6,4A3.6,3.6 0 0,0 4,7.6V16.4C4,18.39 5.61,20 7.6,20H16.4A3.6,3.6 0 0,0 20,16.4V7.6C20,5.61 18.39,4 16.4,4H7.6M17.25,5.5A1.25,1.25 0 0,1 18.5,6.75A1.25,1.25 0 0,1 17.25,8A1.25,1.25 0 0,1 16,6.75A1.25,1.25 0 0,1 17.25,5.5M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z"/>
+                    </svg>
+                </a>
+            </div>
+        </header>
+
+        <section class="filter-container">
+            <h2>Filter by Category</h2>
+            <div id="filter-tags" class="filter-tags"></div>
+        </section>
+
+        <section id="location-list"></section>
+    </main>
+
+    <div id="map"></div>
+
+    <script>
+        const locations = [
+            // REVISED: Removed tip property from locations where it was an empty string for cleaner data.
+            { name: "Itoya (Ginza)", type: 'flagship', address: "2 Chome-7-15 Ginza, Chuo City, Tokyo", description: "A legendary 12-story stationery store. Each floor has a different theme, from fountain pens to fine paper", coords: [35.67312,139.76463], tags: ["Pens", "Paper", "Luxury", "Gifts", "Planners", "Art Supplies", "Crafts", "Stickers", "Ink", "Custom"], taxFree: true, image: `https://res.cloudinary.com/dutmheua1/image/upload/v1761411751/Itoya_jofn82.jpg`, tip: "<strong>Must-Have:</strong>Visit the 'Drink' bar to on the 1st floor for coffee and other drinks. You can take your drink with you to the other levels." },
+            { name: "Loft (Shibuya)", type: 'flagship', address: "21-1 Udagawacho, Shibuya City, Tokyo", description: "The massive flagship store for Loft. Its stationery department is known for showcasing the latest in trendy Japanese stationery.", coords: [35.66093,139.69714], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true, image: `https://res.cloudinary.com/dutmheua1/image/upload/v1761448958/Loft_logo_htycjs.png`, tip: "<strong>Pro Tip:</strong> Check for store-exclusive planner covers and limited edition items, especially around the new year." },
+            { name: "Hands (Shibuya)", type: 'flagship', address: "12-18 Udagawa-cho, Shibuya-ku, Tokyo", description: "A 'creative life store' with multiple floors of goods, including an extensive stationery section with pens, paper, and unique crafting tools.", coords: [35.6620337,139.6953516], tags: ["Crafts", "Pens", "Paper", "Planners", "Art Supplies"], taxFree: true, image: `https://res.cloudinary.com/dutmheua1/image/upload/v1761457960/hands_logo1_siihqs.png`, tip: "<strong>Don't Miss:</strong> The party and games section often has hilarious and uniquely Japanese items you won't find elsewhere." },
+            { name: "Kakimori", type: 'flagship', address: "1 Chome-6-2 Misuji, Taito City, Tokyo", description: "A beautiful shop where you can create your own custom notebook and mix your own fountain pen ink.", coords: [35.7031714,139.7831403], tags: ["Pens", "Paper", "Ink", "Planners", "Custom"], taxFree: false, image: `https://res.cloudinary.com/dutmheua1/image/upload/v1761458968/kaki_shop_ci1zbj.png`, tip: "<strong>Must-Do:</strong> Create a custom ring-bound notebook. You can choose the cover, paper, and binding. You do need to make an appointment on weekends and holidays." },
+            { name: "Sekaido (Shinjuku)", type: 'flagship', address: "Sekaido Building 1F-5F, 3-1-1 Shinjuku, Shinjuku-ku, Tokyo 160-0022", description: "An artist's dream. This multi-floor store offers a vast selection of art supplies, from paints and canvases to manga tools, often at a discount.", coords: [35.6900297,139.701530], tags: ["Pens", "Paper", "Art Supplies"], taxFree: true, image: `https://res.cloudinary.com/dutmheua1/image/upload/v1761459242/sekaido_fxw62n.jpg`, tip: "<strong>Insider Info:</strong> They have a membership card that gives you significant discounts. It's worth asking about if you plan to buy a lot." },
+            { name: "MoMA Design Store (Omotesando)", type: 'flagship', address: "〒150-0001 Tokyo, Shibuya, Jingumae, 5 Chome 10 1 GYRE 3F", description: "Retail extension of New York's Museum of Modern Art, offering a highly curated collection of design-forward objects.", coords: [35.667407,139.706783], tags: ["Gifts"], taxFree: false, image: `https://res.cloudinary.com/dutmheua1/image/upload/v1761455487/Moma_logo_z46cve.png`, tip: "<strong>Pro Tip:</strong> Look specifically for the Japan-exclusive collaborations and limited-edition items. The store often partners with Japanese designers and brands, offering unique products you cannot find at any other MoMA location or online." },
+            { name: "Traveler's Factory (Nakameguro)", type: 'flagship', address: "3 Chome-13-10 Kamimeguro, Meguro City, Tokyo 153-0051, Japan", description: "This is the original flagship store. It's a two-story haven for fans of the Traveler's Company Notebooks, offering the complete product lineup.", coords: [35.6447861,139.6972695], tags: ["Pens", "Gifts", "Planners", "Stickers", "Art Supplies", "Custom"], taxFree: false, image: `https://res.cloudinary.com/dutmheua1/image/upload/v1761455834/tfa_naka2_kuzann.png`, tip: "<strong>Pro Tip:</strong> While there are no store-exclusive covers, there is a cafe upstairs. Plus, you can order a customized leather bag from Superior Labour." },
+            { name: "Traveler's Factory (Tokyo Station)", type: 'flagship', address: "〒100-0005 Tokyo, Chiyoda City, Marunouchi, 1 Chome 9 1 JR", description: "Located within the bustling Gransta Marunouchi area of Tokyo Station, this is a compact and convenient outpost.", coords: [35.6824079,139.7636846], tags: ["Pens", "Gifts", "Planners", "Stickers", "Art Supplies"], taxFree: false, image: `https://res.cloudinary.com/dutmheua1/image/upload/v1761456143/TFA_station_z20hb2.png`, tip: "<strong>Pro Tip:</strong> This branch has its own exclusive line of products themed around Tokyo Station and Japanese trains. There is also a big, colourful mechanical stamp, featuring the Marunouchi building." },
+            { name: "Traveler's Factory (Narita Airport)", type: 'flagship', address: "Terminal 1, 〒286-0111 Chiba, Narita, Sanrizukagoryo, 牧場 1-1 Central Building", description: "Situated in Terminal 1, opposite McDonalds.", coords: [35.7643539,140.3815386], tags: ["Pens", "Gifts", "Planners", "Stickers", "Art Supplies"], taxFree: false, image: `https://res.cloudinary.com/dutmheua1/image/upload/v1761456142/TFA_Narita_airport_kj74cx.png`, tip: "<strong>Pro Tip:</strong> This is the only place to get the airport-exclusive collection of covers, inserts, etc. There is also a gachapon machine at this location." },
+            { name: "Starbucks Reserve Roastery Tokyo", type: 'flagship', address: "2 Chome-19-23 Aobadai, Meguro City, Tokyo 153-0042, Japan", description: "A massive, four-story coffee sanctuary, this is an immersive destination designed by architect Kengo Kuma. It features an active roastery, multiple specialty coffee bars, a Teavana tea bar, the Arriviamo cocktail bar, and an authentic Italian Princi bakery.", coords: [35.6492642,139.6925907], tags: ["Pens", "Gifts", "Planners", "Stickers"], taxFree: false, image: `https://res.cloudinary.com/dutmheua1/image/upload/v1761457171/STarbucks_dw62ov.webp`, tip: "<strong>Pro Tip:</strong> During busy periods (weekends, holidays, and especially cherry blossom season), you need a timed-entry ticket. Scan the QR code near the entrance to join the virtual queue on your phone; you can then explore the Nakameguro area and will be notified when it's your turn to enter, saving you from waiting in line for hours." },
+            { name: "Mt lab.", type: 'flagship', address: "3 Chome-14-5 Kotobuki, Taito City, Tokyo 111-0042, Japan", description: "Mt lab is the official flagship store for 'mt,' Japan's premier washi masking tape brand. This minimalist, gallery-like space in Asakusa has a floor-to-ceiling display of their entire collection, from basic colors and intricate patterns to exclusive artist collaborations.", coords: [35.7064891,139.7903045], tags: ["Stickers"], taxFree: false, image: `https://res.cloudinary.com/dutmheua1/image/upload/v1761460142/mt_lab_ixmbnq.jpg`, tip: "<strong>Pro Tip:</strong> Don't miss the gacha capsule toy machine. For a few hundred yen, you can get a random, miniature roll of washi tape, many of which are rare designs not available for regular purchase." },
+            { name: "Tobichi", type: 'flagship', address: "1F Hobonichi Kanda Building, 3-18 Kanda Nishikicho, Chiyoda-ku, Tokyo", description: "Tobichi is the physical shop and gallery for the beloved Hobonichi brand, creator of the world-famous Techo planner.", coords: [35.6934399,139.7588226], tags: ["Planners", "Stickers"], taxFree: true, image: `https://res.cloudinary.com/dutmheua1/image/upload/v1761460465/tobichi_logo_opoxrw.jpg`, tip: "<strong>Pro Tip:</strong> Always check the official Tobichi website before you go, as the shop's merchandise often includes exclusive items tied to the current gallery exhibition." },
+            { name: "B-Side Label (Harajuku)", type: 'flagship', address: "〒150-0001, Hanae Building B1-B, 4-25-6, Jingumae, Shibuya-ku, Tokyo", description: "-Side Label is a vibrant shop dedicated to high-quality, waterproof vinyl stickers, with locations in youth-culture hubs like Harajuku and Shimokitazawa.", coords: [35.6690764,139.7055475], tags: ["Stickers"], taxFree: false, image: `https://res.cloudinary.com/dutmheua1/image/upload/v1761460659/b-side_m5efyb.jpg`, tip: "<strong>Pro Tip:</strong> Look for the 'Shop Limited' (ショップ限定) sticker section, as each B-Side Label store has designs that are exclusive to that specific location (e.g., a Harajuku-themed sticker only sold in Harajuku). Also, take note of their bulk-buy promotions; they almost always have a deal where buying a certain number of stickers gets you one free." },
+            { name: "Plotter (Harajuku)", type: 'flagship', address: "3 Chome-29-3 Jingumae, Shibuya, Tokyo 150-0001, Japan", description: "Plotter's new flagship store is dedicated to its minimalist and highly customizable ring-leather binder system. The sleek, gallery-like space showcases their full range of premium leather binders, specialized paper refills, and unique tools.", coords: [35.6720259,139.7098113], tags: ["Planners", "Gifts","Custom"], taxFree: false, image: `https://res.cloudinary.com/dutmheua1/image/upload/v1761461066/plotter_tvkb4w.png` },
+            { name: "Ancora (Ginza)", type: 'flagship', address: "6 Chome-4-8 Ginza, Chuo City, Tokyo 104-0061, Japan", description: "Ancora is a bright, modern stationery store in Ginza, operated by the PLUS corporation in collaboration with the famed pen maker, Sailor. It's best known for its interactive experiences, allowing customers to create their own custom-blended fountain pen inks and assemble custom pens.", coords: [35.6710461,139.7587721,], tags: ["Pens", "Ink", "Custom"], taxFree: false, image: `https://res.cloudinary.com/dutmheua1/image/upload/v1761461414/Ancora_mdtlor.png`, tip: "<strong>Pro Tip:</strong> The main draw is the 'Ink Creation' experience where you can mix your own unique bottle of ink, but you must book a reservation online in advance as spots fill up very quickly. Also, look for the Ancora-exclusive Sailor fountain pens, which often feature unique colors and designs unavailable elsewhere." },
+            { name: "Bungubox", type: 'flagship', address: "1 Chome-2-3 Sarugakucho, Chiyoda City, Tokyo 101-0064, Japan", description: "This is a small shop with a curated selection of high-end pens and extensive line of beautiful and unique original inks with creative themes.", coords: [35.6973648,139.7548518], tags: ["Pens", "Inks"], taxFree: false, image: `https://res.cloudinary.com/dutmheua1/image/upload/v1761461600/bungubox_sqxdru.webp` },
+            { name: "Kyukyodo (Ginza)", type: 'flagship', address: "Japan, 〒104-0061 Tokyo, Chuo City, Ginza.", description: "Kyukyodo was founded in 1663. It is one of Japan's most prestigious purveyors of traditional Japanese stationery. The store offers a selection of washi paper, calligraphy brushes, incense, and beautifully illustrated seasonal greeting cards and letter sets.", coords: [35.67110,139.76204], tags: ["Pens", "Paper", "Inks", "Craft", "Gifts"], taxFree: true, image: `https://res.cloudinary.com/dutmheua1/image/upload/v1761530777/shop_kyukyodo_nqi5xk.jpg`, tip: "<strong>Pro Tip:</strong> Kyukyodo releases beautifully designed postcards (hagaki), letter sets, and paper goods themed around the current season (e.g., cherry blossoms, autumn leaves), which make for timely souvenirs you won't find at other times of the year." },
+            { name: "Muji (Ginza)", type: 'flagship', address: "3 Chome-3-5 Ginza, Chuo City, Tokyo 104-0061, Japan", description: "The Muji global flagship in Ginza is a multi-story destination, offering its full range of simple, functional products. It features a massive stationery section celebrated for its high-quality, affordable, and aesthetically unified pens, notebooks, and organizational items.", coords: [35.67321,139.76280], tags: ["Pens", "Paper", "Planners"], taxFree: true, image: `https://res.cloudinary.com/dutmheua1/image/upload/v1761531207/muji_diner_aufsfx.jpg`, tip: "<strong>Pro Tip:</strong> Go to the customization studio on the stationery floor where you can use a unique collection of stamps (many are Ginza-exclusive designs) to personalize the Muji notebooks." },
+            { name: "Isetan (Shunjuku)", type: 'flagship', address: "3 Chome-14-1 Shinjuku, Shinjuku City, Tokyo 160-0022, Japan", description: "Started as a kimono store in 1886, this famous destination is now known for high fashion shopping.", coords: [35.69158,139.70207], tags: ["Pens", "Paper", "Planners"], taxFree: true, image: `https://res.cloudinary.com/dutmheua1/image/upload/v1761531738/isetan_puecao.webp`, tip: "<strong>Pro Tip:</strong> Seek out the limited-edition and Isetan-exclusive collaborations with major pen and stationery brands, which are often announced on their website." },
+
+            { name: "Sekaido (Ikebukuro)", type: 'branch', address: "6F Ikebukuro Parco, 1-28-2 Minami-Ikebukuro, Toshima-ku, Tokyo 171-0022", coords: [35.7305519,139.7122158], tags: ["Pens", "Paper", "Art Supplies"], taxFree: true },
+            { name: "Sekaido (Tachikawa)", type: 'branch', address: "OSJ TACHIKAWA Building 5F, 2-4-5 Akebonocho, Tachikawa City, Tokyo 190-0012", coords: [35.6990198,139.4120136], tags: ["Pens", "Paper", "Art Supplies"], taxFree: true },
+            { name: "Sekaido (Seiseki Sakuragaoka Artman)", type: 'branch', address: "3F, Keio Artman Seiseki Sakuragaoka Store, Keio Seiseki Sakuragaoka SC, Building A, 1-11-1 Sekido, Tama City, Tokyo 206-0011", coords: [35.6505265,139.4473744], tags: ["Pens", "Paper", "Art Supplies"], taxFree: true },
+            { name: "Sekaido (Machida Marui)", type: 'branch', address: "5F Machida Marui, 6-1-6 Haramachida, Machida City, Tokyo 194-0013", coords: [35.5425976,139.44], tags: ["Pens", "Paper", "Art Supplies"], taxFree: true },
+            { name: "Sekaido (Tama Art University Hachioji Campus Store)", type: 'branch', address: "2-1723 Yarimizu, Hachioji, Tokyo 192-0394", coords: [35.6108138,139.3484167], tags: ["Pens", "Paper", "Art Supplies"], taxFree: true },
+            { name: "Hands (Shinjuku)", type: 'branch', address: "Times Square Building 2-8F, 5-24-2 Sendagaya, Shibuya-ku, Tokyo", coords: [35.6870825,139.6996358], tags: ["Crafts", "Pens", "Paper", "Planners", "Art Supplies"], taxFree: true },
+            { name: "Hands (Tokyo Station)", type: 'branch', address: "Daimaru Tokyo Building 8-10F, 1-9-1 Marunouchi, Chiyoda-ku, Tokyo", coords: [35.6811863,139.7687141], tags: ["Crafts", "Pens", "Paper", "Planners", "Art Supplies"], taxFree: true },
+            { name: "Hands (Ginza)", type: 'branch', address: "Marronnier Gate Building 5-9F, 2-2-14 Ginza, Chuo-ku, Tokyo", coords: [35.6743223,139.762867], tags: ["Crafts", "Pens", "Paper", "Planners", "Art Supplies"], taxFree: true },
+            { name: "Hands (Omiya)", type: 'branch', address: "DOM Shopping Center 4 & 5F, 2-3 Sakuragi-cho, Omiya-ku, Saitama City, Saitama", coords: [35.9067849,139.6193354], tags: ["Crafts", "Pens", "Paper", "Planners", "Art Supplies"], taxFree: true },
+            { name: "Kyukyodo (Shibuya))", type: 'branch', address: "Shibuya Scramble Square Shops & Restaurants 14th Floor,2-24-12 Shibuya, Shibuya-ku, Tokyo", coords: [35.6585275,139.6997505], tags: ["Pens", "Paper", "Inks", "Craft", "Gifts"], taxFree: true },
+            { name: "Kyukyodo (Shijuku))", type: 'branch', address: "〒160-8321 1-1-4 Nishi-Shinjuku, Shinjuku-ku, Tokyo Keio Department Store 6th floor", coords: [35.6904644,139.6943251], tags: ["Pens", "Paper", "Inks", "Craft", "Gifts"], taxFree: true },
+            { name: "Kyukyodo (Ikebukuro))", type: 'branch', address: "7th floor, Tobu Department Store, 1-1-25 Nishi-Ikebukuro, Toshima-ku, Tokyo", coords: [35.7289653,139.7050632], tags: ["Pens", "Paper", "Inks", "Craft", "Gifts"], taxFree: true },
+            { name: "Loft (Ikebukro)", type: 'branch', address: "Yodobashi HD Ikebukuro Building, 9th to 12th floors, 1-28-1 Minami-Ikebukuro, Toshima-ku, Tokyo", coords: [35.72875,139.70888], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Ikebukuro Sunshine City)", type: 'branch', address: "Sunshine City Alpa 1F, 3-1 Higashi-Ikebukuro, Toshima-ku, Tokyo", coords: [35.72971,139.718714], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Ginza)", type: 'branch', address: "1st to 5th floors of Ginza Belvia Building, 2-4-6 Ginza, Chuo-ku, Tokyo", coords: [35.67411,139.76626], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Kichijoji)", type: 'branch', address: "Kichijoji Loft is located on the 1st to 5th floors of the Inariya Building, 1-10-1 Kichijoji Honmachi, Musashino City, Tokyo", coords: [35.70520,139.57889], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Futakotamagawa)", type: 'branch', address: "5th and 6th floors of Dogwood Plaza, Futako Tamagawa Rise, 2-23-1 Tamagawa, Setagaya-ku, Tokyo", coords: [35.61273,139.62734], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Machida)", type: 'branch', address: "Machida Modi 5th and 6th floors, 6-2-6 Haramachida, Machida, Tokyo", coords: [35.54320,139.44525], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Akishima)", type: 'branch', address: "Moritown East Building 1F, 2-3-1 Daikanyama, Akishima City, Tokyo", coords: [35.71390,139.36440], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Azusawa)", type: 'branch', address: "Seven Town Azusawa, 3-9-5 Azusawa , Itabashi- ku, Tokyo", coords: [35.78031,139.69457], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Ariake)", type: 'branch', address: "Ariake Garden Mall, 2nd floor, 2-1-8 Ariake, Koto-ku, Tokyo", coords: [35.638312,139.79165], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Ueno)", type: 'branch', address: "Ueno Marui 5th floor, 6-15-1 Ueno, Taito-ku, Tokyo", coords: [35.711023,139.775778], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Oizumigakuen)", type: 'branch', address: "2nd floor, Gran Emio Oizumi Gakuen, 1-28-1 Higashioizumi, Nerima-ku, Tokyo", coords: [35.749523,139.586943], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Oimachi)", type: 'branch', address: "Atre Oimachi 4th floor, 1-2-1 Oi, Shinagawa-ku, Tokyo", coords: [35.605967,139.734891], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Otsuka)", type: 'branch', address: "Atrevie Otsuka 3rd floor, 3-33-1 Minami Otsuka, Toshima-ku, Tokyo", coords: [35.731272,139.72885], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Omori)", type: 'branch', address: "3rd floor, Ito Yokado Omori store, 2-13-1 Omorikita, Ota-ku, Tokyo", coords: [35.586494,139.733185], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Kasai)", type: 'branch', address: "Ario Kasai, 1F, 9-3-3 Higashikasai, Edogawa-ku, Tokyo", coords: [35.652734,139.881918], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Kameido)", type: 'branch', address: "Atre Kameido 3rd floor, 5-1-1 Kameido, Koto-ku, Tokyo", coords: [35.697563,139.826522], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Kameari)", type: 'branch', address: "2nd floor, Ario Kameari , 3-49-3 Kameari, Katsushika-ku, Tokyo", coords: [35.76569,139.852107], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Kitasuna)", type: 'branch', address: "2nd floor, Ario Kitasuna, 2-17-1 Kitasuna, Koto-ku, Tokyo", coords: [35.682529,139.825614], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Kitasenju)", type: 'branch', address: "5th floor, Lumine Kitasenju, 42-2 Senju Asahicho, Adachi-ku, Tokyo", coords: [35.749805,139.804865], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Kiba)", type: 'branch', address: "1st floor, Ito Yokado Kiba store, 1-5-30 Kiba, Koto-ku, Tokyo", coords: [35.66631,139.804507], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Kyodo)", type: 'branch', address: "Kyodo Corti 2F, 2-1 Kyodo, Setagaya-ku, Tokyo", coords: [35.651447,139.635486], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Kinshicho)", type: 'branch', address: "6th floor, Kinshicho Parco, 4-27-14 Kotobashi, Sumida-ku, Tokyo", coords: [35.696332,139.815298], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Higashikurume)", type: 'branch', address: "3-8-1 Honmachi, Higashikurume City, Tokyo, Ito Yokado Higashikurume store 3rd floor", coords: [35.759003,139.528877], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Korakuen Tokyo Dome City LaQua store)", type: 'branch', address: "LaQua Building 3F, 1-1-1 Kasuga, Bunkyo-ku, Tokyo", coords: [35.707036,139.752475], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Kokubunji)", type: 'branch', address: "7th floor, Celeo Kokubunji, 3-20-3 Minamimachi, Kokubunji, Tokyo", coords: [35.699847,139.480132], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Kokuryo)", type: 'branch', address: "3F Ito Yokado Kokuryo Store, 8-2-64 Kokuryocho , Chofu City, Tokyo", coords: [35.646763,139.564161], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Shinjuku)", type: 'branch', address: "Shinjuku Marui Main Building 3F, 30-13 Shinjuku 3-chome, Shinjuku-ku, Tokyo", coords: [35.690903,139.70407], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Takadanobaba)", type: 'branch', address: "BIGBOX Takadanobaba 2nd floor, 1-35-3 Takadanobaba, Shinjuku-ku, Tokyo", coords: [35.712802,139.704305], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Solamachi)", type: 'branch', address: "1-1-2 Oshiage, Sumida-ku, Tokyo Tokyo, Skytree Town Solamachi East Yard 3F", coords: [35.710143,139.812651], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Hachioji)", type: 'branch', address: "6th floor, North Building, Celeo Hachioji, 1-1 Asahi-cho, Hachioji, Tokyo", coords: [35.656069,139.339125], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Minami-Osawa)", type: 'branch', address: "1st floor, Ito Yokado Minami-Osawa store, 2-28-1 Minami-Osawa, Hachioji, Tokyo", coords: [35.613131,139.379355], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Musashisakai)", type: 'branch', address: "1st floor, Ito-Yokado West Building, 2-3-6 Sakaiminatocho, Musashino City, Tokyo", coords: [35.70105,139.544773], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+            { name: "Loft (Lumine Tachikawa)", type: 'branch', address: "6th floor, Lumine Tachikawa, 2-1-1 Akebonocho, Tachikawa, Tokyo", coords: [35.698338,139.413803], tags: ["Pens", "Paper", "Planners", "Stickers", "Gifts"], taxFree: true },
+        ];
+
+        let map, infoWindow;
+        const markers = {}, listItems = {};
+
+        function generateTagsHTML(tags) {
+            if (!tags || tags.length === 0) return '';
+            const limit = 3;
+            if (tags.length <= limit) {
+                return tags.map(tag => `<div class="tag">${tag}</div>`).join('');
+            }
+
+            let html = '';
+            const visibleTags = tags.slice(0, limit);
+            const hiddenTags = tags.slice(limit);
+            html += visibleTags.map(tag => `<div class="tag">${tag}</div>`).join('');
+            html += `<span class="hidden-tags">${hiddenTags.map(tag => `<div class="tag">${tag}</div>`).join('')}</span>`;
+            
+            // REVISED: Using a <button> and adding aria-expanded for accessibility.
+            // The click handler is now added via addEventListener in the initMap function.
+            html += `<button class="more-tags-btn" aria-expanded="false">...more</button>`;
+            return html;
+        }
+
+        // REVISED: Accepts 'event' and stops propagation. Now also handles ARIA attributes.
+        function toggleTags(button, event) {
+            event.stopPropagation(); // Stop the click from bubbling up to the parent list item
+
+            const parent = button.parentElement;
+            const hiddenTagsSpan = parent.querySelector('.hidden-tags');
+
+            if (hiddenTagsSpan) {
+                const isHidden = hiddenTagsSpan.style.display === 'none' || hiddenTagsSpan.style.display === '';
+                if (isHidden) {
+                    hiddenTagsSpan.style.display = 'inline';
+                    button.textContent = '...less';
+                    button.setAttribute('aria-expanded', 'true');
+                } else {
+                    hiddenTagsSpan.style.display = 'none';
+                    button.textContent = '...more';
+                    button.setAttribute('aria-expanded', 'false');
+                }
+            }
+        }
+
+        function generateTaxFreeHTML(isTaxFree) {
+            return isTaxFree ? `<div class="tax-free-badge">Tax-Free</div>` : '';
+        }
+
+        function generateTipHTML(tip) {
+            return tip ? `<div class="popup-tip">${tip}</div>` : '';
+        }
+
+        function generateFlagshipBadgeHTML(type) {
+            return type === 'flagship' ? `<div class="flagship-badge">Flagship</div>` : '';
+        }
+
+        function setActiveListItem(name) {
+            Object.values(listItems).forEach(item => item.classList.remove('active', 'flagship', 'branch'));
+            if (listItems[name]) {
+                const location = locations.find(loc => loc.name === name);
+                listItems[name].classList.add('active');
+                if (location) {
+                    listItems[name].classList.add(location.type);
+                }
+                // Scroll the active item into view
+                listItems[name].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById("map"), {
+                // REVISED: Removed hardcoded center and zoom. The map will be fitted to bounds later.
+                disableDefaultUI: true,
+                zoomControl: true,
+                styles: [ { "featureType": "all", "elementType": "labels.text.fill", "stylers": [{ "color": "#999999" }] }, { "featureType": "all", "elementType": "labels.text.stroke", "stylers": [{ "visibility": "off" }] }, { "featureType": "all", "elementType": "labels.icon", "stylers": [{ "visibility": "off" }] }, { "featureType": "administrative", "elementType": "geometry.fill", "stylers": [{ "color": "#f2f2f2" }] }, { "featureType": "administrative.locality", "elementType": "labels.text.fill", "stylers": [{ "color": "#666666" }] }, { "featureType": "landscape", "elementType": "geometry.fill", "stylers": [{ "color": "#f2f2f2" }] }, { "featureType": "poi", "elementType": "geometry.fill", "stylers": [{ "color": "#f2f2f2" }] }, { "featureType": "road", "elementType": "geometry.fill", "stylers": [{ "color": "#ffffff" }] }, { "featureType": "road", "elementType": "geometry.stroke", "stylers": [{ "color": "#cccccc" }] }, { "featureType": "road.arterial", "elementType": "geometry.stroke", "stylers": [{ "color": "#cccccc" }] }, { "featureType": "road.local", "elementType": "geometry.stroke", "stylers": [{ "color": "#dddddd" }] }, { "featureType": "transit", "elementType": "geometry.fill", "stylers": [{ "color": "#f2f2f2" }] }, { "featureType": "water", "elementType": "geometry.fill", "stylers": [{ "color": "#cccccc" }] } ]
+            });
+
+            infoWindow = new google.maps.InfoWindow({ maxWidth: 340 });
+
+            const locationListEl = document.getElementById('location-list');
+            const filterTagsEl = document.getElementById('filter-tags');
+            const flagshipRedColor = getComputedStyle(document.documentElement).getPropertyValue('--flagship-red').trim();
+            const allTags = new Set();
+            locations.forEach(loc => loc.tags.forEach(tag => allTags.add(tag)));
+            
+            // REVISED: Create a bounds object to fit the map to the markers.
+            const bounds = new google.maps.LatLngBounds();
+
+            // REVISED: Using <button> for accessibility.
+            const allButton = document.createElement('button');
+            allButton.className = 'filter-tag active';
+            allButton.textContent = 'Show All';
+            allButton.addEventListener('click', () => filterLocations('all'));
+            filterTagsEl.appendChild(allButton);
+
+            Array.from(allTags).sort().forEach(tag => {
+                // REVISED: Using <button> for accessibility.
+                const tagButton = document.createElement('button');
+                tagButton.className = 'filter-tag';
+                tagButton.textContent = tag;
+                tagButton.addEventListener('click', () => filterLocations(tag));
+                filterTagsEl.appendChild(tagButton);
+            });
+
+            locations.forEach(location => {
+                const position = { lat: location.coords[0], lng: location.coords[1] };
+
+                let iconStyle;
+                if (location.type === 'flagship') {
+                    iconStyle = { path: google.maps.SymbolPath.CIRCLE, scale: 8.5, fillColor: flagshipRedColor, fillOpacity: 1, strokeWeight: 2, strokeColor: "#ffffff" };
+                } else {
+                    iconStyle = { path: google.maps.SymbolPath.CIRCLE, scale: 6, fillColor: '#87AE73', fillOpacity: 0.9, strokeWeight: 1.5, strokeColor: "#ffffff" };
+                }
+
+                const marker = new google.maps.Marker({ position, map, title: location.name, animation: google.maps.Animation.DROP, icon: iconStyle });
+                markers[location.name] = marker;
+                
+                // REVISED: Extend the bounds with each marker's position.
+                bounds.extend(position);
+
+                marker.addListener('click', () => {
+                    const isFlagship = location.type === 'flagship';
+                    const imageHTML = isFlagship && location.image ? `<div class="popup-image"><img src="${location.image}" alt="${location.name}"></div>` : '';
+                    const descriptionHTML = isFlagship ? `<p class="popup-description">${location.description}</p>` : `<p class="popup-description">A branch location offering a curated selection of popular items.</p>`;
+                    const tipHTML = isFlagship ? generateTipHTML(location.tip) : '';
+
+                    const popupContent = `
+                        <div class="popup-container">
+                            ${imageHTML}
+                            <div class="popup-content">
+                                <div class="popup-title">${location.name}</div>
+                                <div class="location-meta">
+                                    ${generateFlagshipBadgeHTML(location.type)}
+                                    ${generateTagsHTML(location.tags)}
+                                    ${generateTaxFreeHTML(location.taxFree)}
+                                </div>
+                                ${descriptionHTML}
+                                ${tipHTML}
+                                <div class="directions-buttons">
+                                    <a href="https://www.google.com/maps/dir/?api=1&destination=${location.coords[0]},${location.coords[1]}" target="_blank" class="direction-btn">Google Maps</a>
+                                    <a href="http://maps.apple.com/?daddr=${location.coords[0]},${location.coords[1]}" target="_blank" class="direction-btn">Apple Maps</a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    infoWindow.setContent(popupContent);
+                    infoWindow.open(map, marker);
+                    map.panTo(marker.getPosition());
+                    setActiveListItem(location.name);
+                });
+
+                const listItem = document.createElement('article');
+                listItem.className = 'location-item';
+                listItems[location.name] = listItem;
+
+                listItem.innerHTML = `
+                    <h3>${location.name}</h3>
+                    <span>${location.address}</span>
+                    <div class="location-meta">
+                        ${generateFlagshipBadgeHTML(location.type)}
+                        ${generateTagsHTML(location.tags)}
+                        ${generateTaxFreeHTML(location.taxFree)}
+                    </div>
+                `;
+
+                listItem.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    google.maps.event.trigger(marker, 'click');
+                });
+                
+                // REVISED: Attach event listener for the '...more' button after it's created.
+                const moreTagsBtn = listItem.querySelector('.more-tags-btn');
+                if (moreTagsBtn) {
+                    moreTagsBtn.addEventListener('click', (event) => {
+                        toggleTags(moreTagsBtn, event);
+                    });
+                }
+
+                locationListEl.appendChild(listItem);
+            });
+            
+            // REVISED: Fit the map to the bounds of all markers.
+            map.fitBounds(bounds);
+        }
+
+        function filterLocations(selectedTag) {
+            document.querySelectorAll('.filter-tag').forEach(btn => {
+                if (btn.textContent === selectedTag || (selectedTag === 'all' && btn.textContent === 'Show All')) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // REVISED: Create new bounds for the filtered markers.
+            const filteredBounds = new google.maps.LatLngBounds();
+            let visibleCount = 0;
+
+            locations.forEach(location => {
+                const hasTag = location.tags.includes(selectedTag);
+                const isVisible = selectedTag === 'all' || hasTag;
+
+                markers[location.name].setVisible(isVisible);
+                listItems[location.name].style.display = isVisible ? 'block' : 'none';
+                
+                if (isVisible) {
+                    filteredBounds.extend(markers[location.name].getPosition());
+                    visibleCount++;
+                }
+            });
+            
+            // REVISED: Fit the map to the new bounds if there are any visible markers.
+            if (visibleCount > 0) {
+                map.fitBounds(filteredBounds);
+                // If only one marker is visible, fitBounds can zoom in too far.
+                // We listen for the zoom change and cap it at a reasonable level.
+                if (visibleCount === 1) {
+                    google.maps.event.addListenerOnce(map, 'zoom_changed', () => {
+                        if (map.getZoom() > 15) {
+                            map.setZoom(15);
+                        }
+                    });
+                }
+            }
+
+            infoWindow.close();
+            setActiveListItem(null);
+        }
+    </script>
+
+    <!-- 
+      IMPORTANT: Replace 'YOUR_API_KEY' with your actual Google Maps API key.
+      Remember to restrict your key in the Google Cloud Console for security!
+    -->
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBDzbcB-oFxV3lxOG9AgxPvQKOj7yJQfSA&callback=initMap&language=en">
+    </script>
+
+ </body>
+ </html>
